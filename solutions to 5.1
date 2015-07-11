@@ -1,0 +1,75 @@
+> colnames(wordsRemoved) = paste("R", colnames(wordsRemoved))
+> str(wordsRemoved)
+> wikiWords = cbind(wordsAdded, wordsRemoved)
+> library(caTools)
+Warning message:
+package ‘caTools’ was built under R version 3.2.1 
+> set.seed(123)
+> wikiWords$Vandal = wiki$Vandal
+> set.seed(123)
+> split = sample.split(wikiWords$Vandal, SplitRatio = 0.7)
+> wikiTrain = subset(wikiWords , split == TRUE)
+> wikiTest = subset(wikiWords , split == FALSE)
+> library(rpart)
+> library(rpart.plot)
+Warning message:
+package ‘rpart.plot’ was built under R version 3.2.1 
+> wikicart = rpart(Vandal ~., data = wikiTrain, method = "class")
+> wikipr = predict(wikicart, newdata = wikiTest, type = "class")
+> table(wikiTest$Vandal, wikipr)
+   wikipr
+      0   1
+  0 618   0
+  1 533  12
+> (618+12)/(618+12+533)
+[1] 0.5417025
+> wikiWords2 = wikiWords
+> wikiWords2$HTTP = ifelse(grepl("http",wiki$Added,fixed=TRUE), 1, 0)
+> wikiTrain2 = subset(wikiWords2, split==TRUE)
+> 
+> wikiTest2 = subset(wikiWords2, split==FALSE)
+> wikicart2 = rpart(Vandal ~., data = wikiTrain2, method = "class")
+> wikipr2 = predict(wikicart2, newdata = wikiTest2, type = "class")
+> table(wikiTest2$Vandal, wikipr2)
+   wikipr2
+      0   1
+  0 609   9
+  1 488  57
+> (609+57)/(488+609+9+57)
+[1] 0.5726569
+> wikiWords2$NumWordsAdded = rowSums(as.matrix(dtmAdded))
+> 
+> wikiWords2$NumWordsRemoved = rowSums(as.matrix(dtmRemoved))
+> mean(NumWordsAdded)
+Error in mean(NumWordsAdded) : object 'NumWordsAdded' not found
+> mean(wikiWords2$NumWordsAdded)
+[1] 4.050052
+> wikiTrain2 = subset(wikiWords2, split==TRUE)
+> 
+> wikiTest2 = subset(wikiWords2, split==FALSE)
+> wikicart2 = rpart(Vandal ~., data = wikiTrain2, method = "class")
+> wikipr2 = predict(wikicart2, newdata = wikiTest2, type = "class")
+> table(wikiTest2$Vandal, wikipr2)
+   wikipr2
+      0   1
+  0 514 104
+  1 297 248
+> (514+248)/(514+104+297+248)
+[1] 0.6552021
+> wikiWords3 = wikiWords2
+> wikiWords3$Minor = wiki$Minor
+> 
+> wikiWords3$Loggedin = wiki$Loggedin
+> wikiTrain3 = subset(wikiWords3, split==TRUE)
+> 
+> wikiTest3 = subset(wikiWords3, split==FALSE)
+> wikicart3 = rpart(Vandal ~., data = wikiTrain3, method = "class")
+> wikipr3 = predict(wikicart3, newdata = wikiTest3, type = "class")
+> table(wikiTest3$Vandal, wikipr3)
+   wikipr3
+      0   1
+  0 595  23
+  1 304 241
+> (595+241)/(595+23+304+241)
+[1] 0.7188306
+> prp(wikicart3)
